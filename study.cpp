@@ -131,55 +131,28 @@ int filterChartersByPrice(const ScheduleAirline* src, int srcSize,
 	return count;
 }
 
-string encode(string s) {
-	for (char& c : s)
-		if (c == ' ') c = '_';
-	return s;
-}
+void writeToBin(ScheduleAirline* arr, int size)
+{
+	std::ofstream out("file.bin", std::ios::binary | std::ios::out);
 
-string decode(string s) {
-	for (char& c : s)
-		if (c == '_') c = ' ';
-	return s;
-}
-
-void writeToTxt(ScheduleAirline* arr, int size) {
-	std::ofstream fout("file.txt");
-
-	for (int i = 0; i < size; i++) {
-		fout << encode(arr[i].pickup_point) << " "
-			<< arr[i].departure_time.hours << " "
-			<< arr[i].departure_time.minutes << " "
-			<< arr[i].arrival_time.hours << " "
-			<< arr[i].arrival_time.minutes << " "
-			<< arr[i].flight_time << " "
-			<< arr[i].ticket_price << " "
-			<< (int)arr[i].flight_type << "\n";
+	for (int i = 0; i < size; i++)
+	{
+		out.write((char*)&arr[i], sizeof(ScheduleAirline));
 	}
 
-	fout.close();
+	out.close();
 }
 
+void readFromBin(ScheduleAirline* arr, int size)
+{
+	std::fstream in("file.bin", std::ios::binary | std::ios::in);
 
-void readFromTxt(ScheduleAirline* arr, int size) {
-	std::ifstream fin("file.txt");
-
-	for (int i = 0; i < size; i++) {
-		fin >> arr[i].pickup_point
-			>> arr[i].departure_time.hours
-			>> arr[i].departure_time.minutes
-			>> arr[i].arrival_time.hours
-			>> arr[i].arrival_time.minutes
-			>> arr[i].flight_time
-			>> arr[i].ticket_price;
-
-		arr[i].pickup_point = decode(arr[i].pickup_point);
-		int type;
-		fin >> type;
-		arr[i].flight_type = (Flight_type)type;
+	for (int i = 0; i < size; i++)
+	{
+		in.read((char*)&arr[i], sizeof(ScheduleAirline));
 	}
 
-	fin.close();
+	in.close();
 }
 
 
@@ -255,11 +228,11 @@ int main()
 	printScheduleArray(expensiveCharters, expensiveCount);
 
 	// запись в файл
-	writeToTxt(Schedules, 20);
+	writeToBin(Schedules, 20);
 
 	// чтение файла
 	ScheduleAirline test[20];
-	readFromTxt(test, 20);
+	readFromBin(test, 20);
 	std::cout << "\n Данные из txt файла: \n";
 	printScheduleArray(test, 20);
 
