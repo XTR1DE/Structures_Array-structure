@@ -1,5 +1,6 @@
-﻿#include <string>
+#include <string>
 #include <iostream>
+#include <fstream>
 using std::string;
 
 enum class Flight_type {
@@ -130,6 +131,57 @@ int filterChartersByPrice(const ScheduleAirline* src, int srcSize,
 	return count;
 }
 
+string encode(string s) {
+	for (char& c : s)
+		if (c == ' ') c = '_';
+	return s;
+}
+
+string decode(string s) {
+	for (char& c : s)
+		if (c == '_') c = ' ';
+	return s;
+}
+
+void writeToTxt(ScheduleAirline* arr, int size) {
+	std::ofstream fout("file.txt");
+
+	for (int i = 0; i < size; i++) {
+		fout << encode(arr[i].pickup_point) << " "
+			<< arr[i].departure_time.hours << " "
+			<< arr[i].departure_time.minutes << " "
+			<< arr[i].arrival_time.hours << " "
+			<< arr[i].arrival_time.minutes << " "
+			<< arr[i].flight_time << " "
+			<< arr[i].ticket_price << " "
+			<< (int)arr[i].flight_type << "\n";
+	}
+
+	fout.close();
+}
+
+
+void readFromTxt(ScheduleAirline* arr, int size) {
+	std::ifstream fin("file.txt");
+
+	for (int i = 0; i < size; i++) {
+		fin >> arr[i].pickup_point
+			>> arr[i].departure_time.hours
+			>> arr[i].departure_time.minutes
+			>> arr[i].arrival_time.hours
+			>> arr[i].arrival_time.minutes
+			>> arr[i].flight_time
+			>> arr[i].ticket_price;
+
+		arr[i].pickup_point = decode(arr[i].pickup_point);
+		int type;
+		fin >> type;
+		arr[i].flight_type = (Flight_type)type;
+	}
+
+	fin.close();
+}
+
 
 
 
@@ -201,6 +253,15 @@ int main()
 	int expensiveCount = filterChartersByPrice(Schedules, 20, expensiveCharters, N);
 	std::cout << "\n=== Чартерные рейсы дороже " << N << " руб. ===\n";
 	printScheduleArray(expensiveCharters, expensiveCount);
+
+	// запись в файл
+	writeToTxt(Schedules, 20);
+
+	// чтение файла
+	ScheduleAirline test[20];
+	readFromTxt(test, 20);
+	std::cout << "\n Данные из txt файла: \n";
+	printScheduleArray(test, 20);
 
 	return 0;
 }
